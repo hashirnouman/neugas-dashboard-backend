@@ -11,11 +11,6 @@ const prisma = new PrismaClient();
 app.get("/", (req, res) => {
   res.send("Hello, Express with TypeScript! helo");
 });
-app.listen(port, async () => {
-  const data = await prisma.users.updateMany({
-    where: { first_name: "hashir" },
-    data: { last_name: "nouman" },
-  });
-  console.log(data);
+app.listen(port, () => {
   console.log(`Server is Fire at http://localhost:${port}`);
 });
