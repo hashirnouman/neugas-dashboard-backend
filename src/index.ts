@@ -6,14 +6,13 @@ import express, {
   urlencoded,
 } from "express";
 import * as dotenv from "dotenv";
-import { PrismaClient } from "@prisma/client";
+
 import route from "./routes";
 //For env File
 dotenv.config();
 
 const app: Application = express();
 const port = process.env.PORT || 8000;
-const prisma = new PrismaClient();
 app.use(express.json());
 app.use(
   urlencoded({
