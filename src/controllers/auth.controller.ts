@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { signupService } from "../services/auth.service";
-
+import { validationResult } from "express-validator";
 class AuthController {
   private static instance: AuthController;
 
@@ -14,6 +14,12 @@ class AuthController {
   }
 
   signup(req: Request, res: Response) {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
     signupService(req, res);
   }
 
