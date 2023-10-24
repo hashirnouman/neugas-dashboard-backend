@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { signupService } from "../services/auth.service";
+import { loginService, signupService } from "../services/auth.service";
 import { validationResult } from "express-validator";
 class AuthController {
   private static instance: AuthController;
@@ -12,7 +12,9 @@ class AuthController {
     }
     return AuthController.instance;
   }
-
+  /**
+   * user signup method with data validations
+   */
   signup(req: Request, res: Response) {
     const errors = validationResult(req);
 
@@ -24,7 +26,12 @@ class AuthController {
   }
 
   login(req: Request, res: Response) {
-    // Implement the login logic here
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+    loginService(req, res);
   }
 }
 

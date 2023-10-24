@@ -13,3 +13,11 @@ export const signupValidationRules = () => {
       .withMessage("Password must be at least 6 characters long"),
   ];
 };
+export const loginValidationRules = () => {
+  return [
+    check("username").notEmpty().withMessage("First name is required"),
+    check("password")
+      .isLength({ min: 6 })
+      .withMessage("Password must be at least 6 characters long"),
+  ];
+};
