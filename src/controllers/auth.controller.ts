@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { signupService } from "../services/auth.service";
 
 class AuthController {
   private static instance: AuthController;
@@ -13,8 +14,7 @@ class AuthController {
   }
 
   signup(req: Request, res: Response) {
-    const { name } = req.body;
-    res.send(name);
+    signupService(req, res);
   }
 
   login(req: Request, res: Response) {

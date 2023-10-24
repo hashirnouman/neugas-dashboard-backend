@@ -22,5 +22,8 @@ app.use(
 app.listen(port, () => {
   console.log(`Server is Fire at http://localhost:${port}`);
 });
-
+app.get("/", (_, res: Response) => {
+  res.send("Welcome");
+  return;
+});
 app.use("/api", route);
