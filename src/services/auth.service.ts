@@ -4,25 +4,40 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import * as dotenv from "dotenv";
 dotenv.config();
+let refreshTokens = [];
 export const signupService = async (req: Request, res: Response) => {
   try {
     const { firstname, lastname, username, email, password } = req.body;
 
     // Check if the email is already in use
-    const existingUser = await prisma.users.findUnique({
+    const existingUser = await prisma.users.findMany({
       where: {
-        email: email,
+        OR: [
+          {
+            email: email,
+          },
+          { username: username },
+        ],
       },
       select: {
         email: true,
+        username: true,
       },
     });
-
-    if (existingUser) {
-      return res.json({
-        success: false,
-        message: "Email already in use",
-      });
+    // using for loop instead of map beacuse map is asynchronous
+    for (const user of existingUser) {
+      if (user.email === email) {
+        return res.json({
+          success: false,
+          message: "Email already taken",
+        });
+      }
+      if (user.username === username) {
+        return res.json({
+          success: false,
+          message: "Username already taken",
+        });
+      }
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     // Create a new user
@@ -37,26 +52,25 @@ export const signupService = async (req: Request, res: Response) => {
     });
 
     // Sign JWT asynchronously
-    const token = await jwt.sign(
+    const accessToken = generateToken({ email, password });
+    const refreshToken = jwt.sign(
       { email, password },
-      process.env.ACCESS_SECRECT as string,
-      {
-        expiresIn: "1h",
-      }
+      process.env.REFRESH_SECRET as string
     );
-
     return res.json({
       success: true,
       message: "User created successfully",
-      token: token,
+      token: accessToken,
+      refreshToken: refreshToken,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: error || "An error occurred",
+      message: "An error occurred",
     });
   }
 };
+
 export const loginService = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
@@ -86,17 +100,17 @@ export const loginService = async (req: Request, res: Response) => {
       );
       if (passwordCheck) {
         // Sign JWT asynchronously
-        const token = await jwt.sign(
+        const token = generateToken({ username, password });
+
+        const refreshToken = jwt.sign(
           { username, password },
-          process.env.ACCESS_SECRECT as string,
-          {
-            expiresIn: "1h",
-          }
+          process.env.REFRESH_SECRET as string
         );
         return res.json({
           success: true,
           message: "Login successfull",
           token: token,
+          refreshToken: refreshToken,
         });
       } else {
         return res.json({
@@ -117,3 +131,9 @@ export const loginService = async (req: Request, res: Response) => {
     });
   }
 };
+
+function generateToken(user: Object) {
+  return jwt.sign(user, process.env.ACCESS_SECRECT as string, {
+    expiresIn: "1h",
+  });
+}

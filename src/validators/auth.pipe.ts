@@ -15,7 +15,7 @@ export const signupValidationRules = () => {
 };
 export const loginValidationRules = () => {
   return [
-    check("username").notEmpty().withMessage("First name is required"),
+    check("username").notEmpty().withMessage("username or email is required"),
     check("password")
       .isLength({ min: 6 })
       .withMessage("Password must be at least 6 characters long"),
