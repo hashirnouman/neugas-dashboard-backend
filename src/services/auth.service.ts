@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import * as dotenv from "dotenv";
 dotenv.config();
-let refreshTokens = [];
+let refreshTokens: any = [];
 export const signupService = async (req: Request, res: Response) => {
   try {
     const { firstname, lastname, username, email, password } = req.body;
@@ -106,6 +106,9 @@ export const loginService = async (req: Request, res: Response) => {
           { username, password },
           process.env.REFRESH_SECRET as string
         );
+
+        refreshTokens.push(refreshToken);
+
         return res.json({
           success: true,
           message: "Login successfull",
@@ -130,6 +133,41 @@ export const loginService = async (req: Request, res: Response) => {
       message: error || "An error occurred",
     });
   }
+};
+
+export const refreshTokenService = async (req: Request, res: Response) => {
+  const refreshToken: string = req.body.token;
+  console.log(refreshToken);
+
+  if (refreshToken == null)
+    return res.status(401).json({
+      success: false,
+      message: "refresh token missing",
+    });
+  if (!refreshTokens.includes(refreshToken)) {
+    return res.status(403).json({
+      success: false,
+      message: "you don't have access",
+    });
+  }
+  jwt.verify(
+    refreshToken,
+    process.env.REFRESH_SECRET as string,
+    (err, user) => {
+      if (err) {
+        return res.status(403).json({
+          success: false,
+          message: "error in generating token",
+        });
+      }
+      const accessToken = generateToken({ user });
+      return res.status(200).json({
+        success: true,
+        message: "token refresh successful",
+        accessToken: accessToken,
+      });
+    }
+  );
 };
 
 function generateToken(user: Object) {

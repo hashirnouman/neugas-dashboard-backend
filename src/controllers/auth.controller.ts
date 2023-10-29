@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
-import { loginService, signupService } from "../services/auth.service";
+import {
+  loginService,
+  refreshTokenService,
+  signupService,
+} from "../services/auth.service";
 import { validationResult } from "express-validator";
 class AuthController {
   private static instance: AuthController;
@@ -32,6 +36,9 @@ class AuthController {
       return res.status(400).json({ success: false, errors: errors.array() });
     }
     loginService(req, res);
+  }
+  refresh(req: Request, res: Response) {
+    refreshTokenService(req, res);
   }
 }
 
