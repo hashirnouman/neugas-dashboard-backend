@@ -128,16 +128,16 @@ export const loginService = async (req: Request, res: Response) => {
       });
     }
   } catch (error) {
+    console.log(error);
     return res.status(500).json({
       success: false,
-      message: error || "An error occurred",
+      message: "An error occurred",
     });
   }
 };
 
 export const refreshTokenService = async (req: Request, res: Response) => {
   const refreshToken: string = req.body.token;
-  console.log(refreshToken);
 
   if (refreshToken == null)
     return res.status(401).json({
@@ -172,6 +172,6 @@ export const refreshTokenService = async (req: Request, res: Response) => {
 
 function generateToken(user: Object) {
   return jwt.sign(user, process.env.ACCESS_SECRECT as string, {
-    expiresIn: "1h",
+    expiresIn: "20s",
   });
 }

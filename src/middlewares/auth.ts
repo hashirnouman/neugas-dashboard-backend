@@ -12,8 +12,11 @@ export function authenticateToken(
   if (token == null) return res.sendStatus(401);
 
   jwt.verify(token, process.env.ACCESS_SECRECT as string, (err, user) => {
-    console.log(err);
-    if (err) return res.sendStatus(403);
+    if (err)
+      return res.sendStatus(403).json({
+        success: false,
+        message: "INVALID TOKEN",
+      });
     req.body.user = user;
     next();
   });
