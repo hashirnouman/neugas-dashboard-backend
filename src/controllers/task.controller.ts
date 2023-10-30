@@ -11,7 +11,7 @@ class TaskController {
     return TaskController.instance;
   }
   test(req: Request, res: Response) {
-    console.log("");
+    res.send(req.body.user.user);
   }
 }
 
