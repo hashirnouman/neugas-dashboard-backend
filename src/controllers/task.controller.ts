@@ -1,10 +1,4 @@
 import { Request, Response } from "express";
-import {
-  loginService,
-  refreshTokenService,
-  signupService,
-} from "../services/auth.service";
-import { validationResult } from "express-validator";
 class TaskController {
   private static instance: TaskController;
 
@@ -17,7 +11,7 @@ class TaskController {
     return TaskController.instance;
   }
   test(req: Request, res: Response) {
-    return res.send(req.body.user);
+    console.log("");
   }
 }
 

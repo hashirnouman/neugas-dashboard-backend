@@ -1,10 +1,11 @@
 import prisma from "../prisma";
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload, VerifyErrors } from "jsonwebtoken";
 import * as dotenv from "dotenv";
 dotenv.config();
 let refreshTokens: any = [];
+
 export const signupService = async (req: Request, res: Response) => {
   try {
     const { firstname, lastname, username, email, password } = req.body;
@@ -52,7 +53,7 @@ export const signupService = async (req: Request, res: Response) => {
     });
 
     // Sign JWT asynchronously
-    const accessToken = generateToken({ email, password });
+    const accessToken = generateToken(email);
     const refreshToken = jwt.sign(
       { email, password },
       process.env.REFRESH_SECRET as string
@@ -70,7 +71,9 @@ export const signupService = async (req: Request, res: Response) => {
     });
   }
 };
-
+interface User extends JwtPayload {
+  username?: string;
+}
 export const loginService = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
@@ -100,8 +103,8 @@ export const loginService = async (req: Request, res: Response) => {
       );
       if (passwordCheck) {
         // Sign JWT asynchronously
-        const token = generateToken({ username, password });
 
+        const token = generateToken(username);
         const refreshToken = jwt.sign(
           { username, password },
           process.env.REFRESH_SECRET as string
@@ -150,17 +153,18 @@ export const refreshTokenService = async (req: Request, res: Response) => {
       message: "you don't have access",
     });
   }
+
   jwt.verify(
     refreshToken,
     process.env.REFRESH_SECRET as string,
-    (err, user) => {
-      if (err) {
+    (err, user: any) => {
+      if (err || !user?.username) {
         return res.status(403).json({
           success: false,
           message: "error in generating token",
         });
       }
-      const accessToken = generateToken({ user });
+      const accessToken = generateToken(user.username);
       return res.status(200).json({
         success: true,
         message: "token refresh successful",
@@ -170,8 +174,8 @@ export const refreshTokenService = async (req: Request, res: Response) => {
   );
 };
 
-function generateToken(user: Object) {
-  return jwt.sign(user, process.env.ACCESS_SECRECT as string, {
+function generateToken(user: string) {
+  return jwt.sign({ user }, process.env.ACCESS_SECRECT as string, {
     expiresIn: "20s",
   });
 }
